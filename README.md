@@ -24,3 +24,7 @@ nvim
 nvim
 # Then the previous executed Neovim job will be brought to foreground.
 ```
+
+## License
+
+[MIT](LICENSE)
