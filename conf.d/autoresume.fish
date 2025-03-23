@@ -1,48 +1,48 @@
-# This imitates Zsh's auto_resume feature.
-# If the given command name matches the background job, bring it to foreground
-# instead of executing it newly.
+# This script imitates Zsh's auto_resume feature as described below.
+#
+# https://zsh.sourceforge.io/Doc/Release/Options.html#index-AUTORESUME
+# > AUTO_RESUME (-W)
+# >     Treat single word simple commands without redirection as candidates for
+# >     resumption of an existing job.
+
 function _auto_resume_preexec --on-event fish_preexec
-    # Check if the given commmand includes any white space (that is followed by args).
-    # If so, skip auto-resume.
-    if string match -rq '\s' "$argv"
+    set -l _auto_resume_command (string trim "$argv[1]")
+    # If the given command is not a single word, skip auto_resume.
+    if string match -rq '\s' "$_auto_resume_command"
+        return 0
+    end
+    ## If the given command is not an executable file, skip auto_resume.
+    if test (type -t "$_auto_resume_command") != "file"
         return 0
     end
     # Get the job ID of the background job whose command equals to the given one.
     set -g _auto_resume_jobid (jobs |
-            # delete the first header line
+            # Remove the first header line.
             tail -n -1 |
-            # extract jobs whose command (without args) equals to the given one
-            awk '$5 == "'$argv'"' |
-            # extract only the first match
+            # Extract jobs whose command (without args) equals to the given one
+            awk '$5 == "'$_auto_resume_command'"' |
+            # Extract only the first match.
             head -n 1 |
-            # extract Group ID
+            # Extract Group ID.
             awk '{ print $2 }' |
             string trim)
     if test -n "$_auto_resume_jobid"
-        # If the given command is function, save it as an alias.
-        if functions -q "$argv"
-            functions -c "$argv" _auto_resume_"$argv"
-        end
         # Create the function which brings the job to foreground and
-        # override the given command by the function.
-        function "$argv"
+        # override the given command with this function.
+        function "$_auto_resume_command"
             fg "$_auto_resume_jobid"
         end
     end
 end
 
-# Delete some functions and variables created by _auto_resume_preexec.
+# Clean up functions and variables created by _auto_resume_preexec.
 function _auto_resume_postexec --on-event fish_postexec
-    # Check if auto-resume is done.
+    # Check if auto_resume is performed
     if test -n "$_auto_resume_jobid"
         # Delete the function overriding the original command.
-        functions -e "$argv"
-        # Restore the original function if it exists.
-        if functions -q _auto_resume_"$argv"
-            functions -c _auto_resume_"$argv" "$argv"
-            functions -e _auto_resume_"$argv"
-        end
-        # Delete the jobid created by _auto_resume_preexec.
+        set -l _auto_resume_command (string trim "$argv[1]")
+        functions -e "$_auto_resume_command"
+        # Delete the job ID created by _auto_resume_preexec.
         set -e _auto_resume_jobid
     end
 end

@@ -1,8 +1,9 @@
 # autoresume.fish
 
-Fish-shell plugin which provides Zsh's autoresume feature.
+Fish-shell plugin which provides Zsh's AUTO_RESUME feature as described below.
 
-This plugin brings the background job to foreground automatically when you execute the command same as it.
+https://zsh.sourceforge.io/Doc/Release/Options.html#index-AUTORESUME
+> Treat single word simple commands without redirection as candidates for resumption of an existing job.
 
 ## Installation
 
@@ -14,7 +15,7 @@ fisher install iwataka/autoresume.fish
 
 ## Usage
 
-Just install this plugin and now you can `autoresume`.
+Just install this plugin and now you can AUTO_RESUME.
 
 For example:
 
@@ -22,7 +23,7 @@ For example:
 nvim
 # Press Ctrl+Z to bring the Neovim job to background.
 nvim
-# Then the previous executed Neovim job will be brought to foreground.
+# Then the background Neovim job will be resumed.
 ```
 
 ## License
